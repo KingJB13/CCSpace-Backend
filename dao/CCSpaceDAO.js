@@ -49,7 +49,7 @@ export default class ccspaceDAO{
         try
         {
             const result = await client.query(`call registeraccount($1, $2, $3, $4, $5, $6)`,[email, password, first_name, last_name, middle_name, position])
-            return result.rows[0].id
+            return result.rows[0].ccs_id
         }
         catch (e)
         {
@@ -78,7 +78,7 @@ export default class ccspaceDAO{
         try
         {
             const result = await client.query(`call createschedule($1, $2, $3, $4, $5, $6, $7)`, [time_start, time_end, sub_code, class_section , sched_day, profid, roomid])
-            return result.rows[0].id
+            return result.rows[0].schedule_id
         }
         catch (e)
         {
@@ -92,7 +92,7 @@ export default class ccspaceDAO{
         try
         {
             const result = await client.query(`call roomtimein($1, $2, $3, $3, $4, $5, $6, $7)`, [subjectcode, class_section, sessday, sessid, resid, profid, roomid])
-            return result.rows[0].id
+            return result.rows[0].log_id
         }
         catch (e)
         {
@@ -106,7 +106,7 @@ export default class ccspaceDAO{
         try
         {
             const result = await pool.query(`call createreservation($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, [vacant_start, vacant_end, reserve_date, subjectcode, reserve_day, class_section, reserve_purpose, schedid/admin_id, profid, roomid])
-            return result.rows[0].id
+            return result.rows[0].reservation_id
         }
         catch (e)
         {
@@ -120,7 +120,7 @@ export default class ccspaceDAO{
         try
         {
             const result = await pool.query(`call approvedreservation($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,[approve_id, vacant_start, vacant_end, subjectcode, reserve_date, reserve_day, reserve_section, schedid, profid, roomid])
-            return result.rows[0].id
+            return result.rows[0].reserved_id
         }
         catch (e)
         {
