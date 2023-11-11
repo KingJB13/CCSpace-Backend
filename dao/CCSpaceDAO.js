@@ -1,6 +1,7 @@
 import { client } from '../configurations/database.cjs'
 
 export default class ccspaceDAO{
+    //get methods
     static async returnWholeSchedule()
     {
         try 
@@ -42,6 +43,7 @@ export default class ccspaceDAO{
         }
     }
 
+    //post methods
     static async registeraccount(email, password, first_name, last_name, middle_name, position)
     {
         try
@@ -85,11 +87,11 @@ export default class ccspaceDAO{
         }
     }
 
-    static async roomtimein(subjectcode, sessday, sessid, resid, profid, roomid)
+    static async roomtimein(subjectcode, class_section, sessday, sessid, resid, profid, roomid)
     {
         try
         {
-            const result = await client.query(`call roomtimein($1, $2, $3, $3, $4, $5, $6)`, [subjectcode, sessday, sessid, resid, profid, roomid])
+            const result = await client.query(`call roomtimein($1, $2, $3, $3, $4, $5, $6, $7)`, [subjectcode, class_section, sessday, sessid, resid, profid, roomid])
             return result.rows[0].id
         }
         catch (e)
@@ -99,6 +101,35 @@ export default class ccspaceDAO{
         }
     }
 
+    static async createreservation (vacant_start, vacant_end, reserve_date, subjectcode, reserve_day, class_section, reserve_purpose, schedid, profid, roomid)
+    {
+        try
+        {
+            const result = await pool.query(`call createreservation($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, [vacant_start, vacant_end, reserve_date, subjectcode, reserve_day, class_section, reserve_purpose, schedid/admin_id, profid, roomid])
+            return result.rows[0].id
+        }
+        catch (e)
+        {
+            console.error(`Unable to create reservation: ${e}`)
+            return {error: e}
+        }
+    }
+
+    static async approvedreservation(approve_id, vacant_start, vacant_end, subjectcode, reserve_date, reserve_day, reserve_section, schedid, profid, roomid)
+    {
+        try
+        {
+            const result = await pool.query(`call approvedreservation($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,[approve_id, vacant_start, vacant_end, subjectcode, reserve_date, reserve_day, reserve_section, schedid, profid, roomid])
+            return result.rows[0].id
+        }
+        catch (e)
+        {
+            console.error(`Unable to create reservation: ${e}`)
+            return {error: e}            
+        }
+    }
+    
+    //put methods
     static async updatepassword(user_id, password)
     {
         try
@@ -136,7 +167,7 @@ export default class ccspaceDAO{
             return { error: e}
         }
     }
-
+    //delete methods
     static async deleteAccount(user_id)
     {
         try
