@@ -163,7 +163,6 @@ export default class ccspaceController
                 body('sub_code').isString().isLength({max:10}).custom(value => sqlInjectionCheck(value)),
                 body('class_section').isString().isLength({min:7, max:10}).custom(value => sqlInjectionCheck(value)),
                 body('sched_day').isDate().isISO8601('yyyy-mm-dd'),
-                body('prof_id').isNumeric(),
                 body('roomid').isNumeric(),
             ]
             const { time_start, time_end, sub_code, class_section,sched_day, roomid } = req.body
@@ -210,7 +209,6 @@ export default class ccspaceController
                 body('sessday').isString().isLength({min:6 , max:9}).custom(value => sqlInjectionCheck(value)),
                 body('sessid').isNumeric(),
                 body('resid').isNumeric(),
-                body('prof_id').isNumeric(),
                 body('roomid').isNumeric(),
             ]
 
@@ -260,7 +258,6 @@ export default class ccspaceController
                 body('class_section').isString().isLength({min:7, max:10}).custom(value => sqlInjectionCheck(value)),
                 body('reserve_purpose').isString().isLength({min:20, max: 255}).custom(value => sqlInjectionCheckText(value)),
                 body('schedid').isNumeric,
-                body('prof_id').isNumeric,
                 body('roomid').isNumeric
             ]
             const { vacant_start, vacant_end, reserve_date, subjectcode, reserve_day, class_section, reserve_purpose, schedid, roomid } = req.body
@@ -313,7 +310,6 @@ export default class ccspaceController
                 body('class_section').isString().isLength({min:7, max:10}).custom(value => sqlInjectionCheck(value)),
                 body('reserve_purpose').isString().isLength({min:20, max: 255}).custom(value => sqlInjectionCheckText(value)),
                 body('schedid').isNumeric,
-                body('prof_id').isNumeric,
                 body('roomid').isNumeric
             ]
             const { approve_id } = req.params
