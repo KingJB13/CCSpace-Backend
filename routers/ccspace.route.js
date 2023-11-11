@@ -9,7 +9,8 @@ router.route('/register').post(ccspaceController.apiRegisterAccount)
 router.route('/login').post(ccspaceController.apiLoginAccount)
 router.post('/:id/create_schedule', authenticateToken, ccspaceController.apiCreateSchedule)
 router.post('/time_in/:id', authenticateToken, ccspaceController.apiRoomTimeIn)
-
+router.post('/create_reservation',authenticateToken,ccspaceController.apiCreateReservation)
+router.post('/approve_reservation/:id',authenticateToken, ccspaceController.apiApproveReservation)
 //get route
 router.route('/ccs_schedule').get(ccspaceController.apiGetWholeSchedule)
 router.get('/room_schedule/:id', authenticateToken, ccspaceController.apiGetSchedule)
