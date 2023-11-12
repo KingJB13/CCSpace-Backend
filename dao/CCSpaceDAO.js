@@ -1,4 +1,4 @@
-import { client } from '../configurations/database.cjs'
+import { pool } from '../configurations/database.cjs'
 
 export default class ccspaceDAO{
     //get methods
@@ -6,7 +6,7 @@ export default class ccspaceDAO{
     {
         try 
         {
-            const result = await client.query('call returnwholeschedule()')
+            const result = await pool.query('call returnwholeschedule()')
             return result.rows
         }
         catch (e)
@@ -19,7 +19,7 @@ export default class ccspaceDAO{
     {
         try
         {
-            const result = await client.query(`call returnschedule($1, $2, $3)`,[sched_id, profid, roomid])
+            const result = await pool.query(`call returnschedule($1, $2, $3)`,[sched_id, profid, roomid])
             return result.rows
         }
         catch (e)
@@ -33,7 +33,7 @@ export default class ccspaceDAO{
     {
         try
         {
-            const result = await client.query('getlog()')
+            const result = await pool.query('getlog()')
             return result.rows[0]
         }
         catch (e)
@@ -48,7 +48,7 @@ export default class ccspaceDAO{
     {
         try
         {
-            const result = await client.query(`call registeraccount($1, $2, $3, $4, $5, $6)`,[email, password, first_name, last_name, middle_name, position])
+            const result = await pool.query(`call registeraccount($1, $2, $3, $4, $5, $6)`,[email, password, first_name, last_name, middle_name, position])
             return result.rows[0].ccs_id
         }
         catch (e)
@@ -62,7 +62,7 @@ export default class ccspaceDAO{
     {
         try
         {
-            const result = await client.query(`call loginaccount($1, $2)`,[email,password])
+            const result = await pool.query(`call loginaccount($1, $2)`,[email,password])
             
             return result.rows[0]
         }
@@ -77,7 +77,7 @@ export default class ccspaceDAO{
     {
         try
         {
-            const result = await client.query(`call createschedule($1, $2, $3, $4, $5, $6, $7)`, [time_start, time_end, sub_code, class_section , sched_day, profid, roomid])
+            const result = await pool.query(`call createschedule($1, $2, $3, $4, $5, $6, $7)`, [time_start, time_end, sub_code, class_section , sched_day, profid, roomid])
             return result.rows[0].schedule_id
         }
         catch (e)
@@ -91,7 +91,7 @@ export default class ccspaceDAO{
     {
         try
         {
-            const result = await client.query(`call roomtimein($1, $2, $3, $3, $4, $5, $6, $7)`, [subjectcode, class_section, sessday, sessid, resid, profid, roomid])
+            const result = await pool.query(`call roomtimein($1, $2, $3, $3, $4, $5, $6, $7)`, [subjectcode, class_section, sessday, sessid, resid, profid, roomid])
             return result.rows[0].log_id
         }
         catch (e)
@@ -134,7 +134,7 @@ export default class ccspaceDAO{
     {
         try
         {
-            return await client.query(`call updatepassword($1, $2)`,[user_id,password])
+            return await pool.query(`call updatepassword($1, $2)`,[user_id,password])
         }
         catch (e)
         {
@@ -146,7 +146,7 @@ export default class ccspaceDAO{
     {
         try
         {
-            return await client.query(`call updateschedule($1, $2, $3, $4, $5, $6, $7)`, [sched_id, new_time_start, new_time_end, new_sub_code, new_section, new_sched_day, new_prof_id, new_room_id])
+            return await pool.query(`call updateschedule($1, $2, $3, $4, $5, $6, $7)`, [sched_id, new_time_start, new_time_end, new_sub_code, new_section, new_sched_day, new_prof_id, new_room_id])
         }
         catch (e)
         {
@@ -159,7 +159,7 @@ export default class ccspaceDAO{
     {
         try 
         {
-            return await client.query(`call updateschedule($1, $2, $3)`, [logid, sessdate, prof_id])
+            return await pool.query(`call updateschedule($1, $2, $3)`, [logid, sessdate, prof_id])
         }
         catch (e)
         {
@@ -172,7 +172,7 @@ export default class ccspaceDAO{
     {
         try
         {
-            return await client.query(`call deleteaccount($1)`,[user_id])
+            return await pool.query(`call deleteaccount($1)`,[user_id])
         }
         catch (e)
         {
@@ -184,7 +184,7 @@ export default class ccspaceDAO{
     {
         try
         {
-            return await client.query(`call deleteschedule($1)`,[sched_id])
+            return await pool.query(`call deleteschedule($1)`,[sched_id])
         }
         catch (e)
         {

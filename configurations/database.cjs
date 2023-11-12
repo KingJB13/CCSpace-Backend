@@ -1,19 +1,22 @@
-const { Client } = require('pg')
+const { Pool } = require('pg')
 
-const client = new Client({
+const pool = new Pool({
         host: "localhost",
         port: 5432,
         user: "postgres",
         password:"$root",
         database: "ccspace",
-        
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 2000,
+        allowExitOnIdle: false
     })
 
-client.on('connect', ()=>{
+pool.on('connect', ()=>{
     console.log('Database connected')
 })
-client.on('end', ()=>{
+pool.on('end', ()=>{
     console.log('Database disconnected')
 })
-    
-module.exports = { client }
+
+module.exports = { pool }
