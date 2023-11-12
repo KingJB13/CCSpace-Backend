@@ -7,6 +7,7 @@ const router = express.Router()
 //post route
 router.route('/register').post(ccspaceController.apiRegisterAccount)
 router.route('/login').post(ccspaceController.apiLoginAccount)
+router.post('/home',authenticateToken,ccspaceController.apiAuthorize)
 router.post('/:id/create_schedule', authenticateToken, ccspaceController.apiCreateSchedule)
 router.post('/time_in/:id', authenticateToken, ccspaceController.apiRoomTimeIn)
 router.post('/create_reservation',authenticateToken,ccspaceController.apiCreateReservation)

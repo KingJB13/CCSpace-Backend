@@ -2,6 +2,34 @@ import { pool } from '../configurations/database.cjs'
 
 export default class ccspaceDAO{
     //get methods
+    static async checkexist(email)
+    {
+        try
+        {
+            const result = await pool.query(`SELECT * FROM ccspace_user WHERE ccs_email = $1`,[email])
+            return result.rows.length
+        }
+        catch (e)
+        {
+            console.error(`Unable to register account: ${e}`)
+            return {error: e}
+        }
+    }
+
+    static async authorize(ccs_id)
+    {
+        try
+        {
+            const result = await pool.query(`SELECT * FROM ccspace_user WHERE ccs_id = $1`,[ccs_id])
+            return result.rows[0]
+        }
+        catch (e)
+        {
+            console.error(`Unable to register account: ${e}`)
+            return {error: e}
+        }
+    }
+
     static async returnWholeSchedule()
     {
         try 

@@ -2,7 +2,16 @@ import ccspaceDAO from '../dao/CCSpaceDAO.js'
 import AuthMiddleware from '../configurations/auth-middleware.js'
 import bcrypt from 'bcrypt'
 import { body, validationResult } from 'express-validator'
-
+import jwt from 'jsonwebtoken'
+import jwtSecret from '../configurations/constants.js'
+function jwtGenerator(user_id){
+    const credentials ={
+        user: {
+            id: user_id
+        }
+    }
+    return jwt.sign(credentials, jwtSecret, {expiresIn: "24h"})
+}
 const sqlInjectionCheck = (value) => {
 
     const isSafe = !value.includes('DROP') && !value.includes('DELETE') && !value.includes('UPDATE')
@@ -52,7 +61,6 @@ export default class ccspaceController
     {
         try
         {
-            const profid = req.user.prof_id
             AuthMiddleware.authenticateToken(req, res, () => 
             {
                 AuthMiddleware.authorizeAdmin(req, res, async () => 
@@ -99,6 +107,12 @@ export default class ccspaceController
             if (!errors.isEmpty()) {
               return res.status(422).json({ errors: errors.array() })
             }
+            
+            const check = await(ccspaceDAO.checkexist(email))
+            if(check !== 0)
+            {
+                res.status(401).json("User already exist!")
+            }
 
             const hashedPassword = await bcrypt.hash(password, 10)
             const registerAccount = await ccspaceDAO.registeraccount
@@ -110,7 +124,7 @@ export default class ccspaceController
                 middle_name, 
                 position,
             )
-            res.status(201).json({status: 'success'})
+            res.json(registerAccount)
         }
         catch (e)
         {
@@ -145,8 +159,20 @@ export default class ccspaceController
                 res.status(401).json({error: e.message})
             }
         
-            const token = jwt.sign({ id: loginAccount.id, email: loginAccount.email }, jwtSecret)
-            res.json({ message: 'Login successful', token })
+            const jwtToken = jwtGenerator(loginAccount.ccs_id)
+            res.json(jwtToken)
+    }
+
+    static async apiAuthorize(req, res){
+        try{
+            const ccs_id = req.user.id
+            const Authorize = await ccspaceDAO.authorize(ccs_id)
+            res.json(Authorize)
+        }
+        catch(error)
+        {
+            res.status(500).json({error: e.message})
+        }
     }
 
 
@@ -222,10 +248,8 @@ export default class ccspaceController
             if (!errors.isEmpty()) {
               return res.status(422).json({ errors: errors.array() })
             }
-            AuthMiddleware.authenticateToken(req, res, () =>
+            AuthMiddleware.authenticateToken(req, res, async () =>
             {
-                AuthMiddleware.authorizeUser(req, res, async () =>
-                {
                     const RoomTimeIn = await ccspaceDAO.roomtimein(
                         subjectcode,
                         sessday, 
@@ -234,9 +258,7 @@ export default class ccspaceController
                         profid, 
                         roomid
                     )
-
                     res.status(200).json({ status: success})
-                })
             })
         }
         catch (error)
@@ -331,10 +353,8 @@ export default class ccspaceController
               return res.status(422).json({ errors: errors.array() })
             }
             
-            AuthMiddleware.authenticateToken(req, res, () =>
+            AuthMiddleware.authenticateToken(req, res,async () =>
             {
-                AuthMiddleware.authorizeUser(req, res, async () =>
-                {
                     const CreateReservation = await ccspaceDAO.approvedreservation( 
                         approve_id,
                         vacant_start, 
@@ -347,9 +367,8 @@ export default class ccspaceController
                         profid, 
                         roomid
                     )
-
                     res.status(200).json({ status: success})
-                })
+
             })
         }
         catch (error)
@@ -372,11 +391,8 @@ export default class ccspaceController
             
             AuthMiddleware.authenticateToken(req, res, () => 
             {
-                AuthMiddleware.authorizeUser(req, res, async () => 
-                {
                     const updatePassword = ccspaceDAO.updatePassword(user_id, hashedPassword)
                     res.status(200).json({ message: 'Schedule created successfully' })
-                })
             })
         }
         catch (e)
@@ -423,11 +439,8 @@ export default class ccspaceController
             const prof_id  = req.user.prof_id
             AuthMiddleware.authenticateToken(req, res, () => 
             {
-                AuthMiddleware.authorizeUser(req, res, async () => 
-                {
                     const RoomTimeOut = ccspaceDAO.roomtimeout(logid, sessdate, prof_id)
                     res.status(200).json({ message: 'Schedule created successfully' })
-                })
             })
         }
         catch (error)
@@ -444,13 +457,10 @@ export default class ccspaceController
         try 
         {
             const user_id = req.user.user_id
-            AuthMiddleware.authenticateUser(req, res, () => 
+            AuthMiddleware.authenticateUser(req, res, async () => 
             {
-                AuthMiddleware.authorizeUser(req, res, async () => 
-                {
                     const deleteAccount = await ccspaceDAO.deleteAccount(user_id)
                     res.status(200).json({ error: e.message })
-                })
             })
             } catch (error) {
 
@@ -466,13 +476,10 @@ export default class ccspaceController
             * only admins can delete schedule
             */
             const sched_id = req.body.sched_id
-            AuthMiddleware.authenticateUser(req, res, () => 
+            AuthMiddleware.authenticateUser(req, res, async () => 
             {
-                AuthMiddleware.authorizeAdmin(req, res, async () => 
-                {
                     const deleteSchedule = await ccspaceDAO.deleteSchedule(sched_id)
                     res.status(200).json({ error: e.message })
-                })
             })
             } catch (error) {
 

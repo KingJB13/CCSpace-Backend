@@ -20,14 +20,6 @@ export default class AuthMiddleware {
 
     next();
   }
-
-  static authorizeUser(req, res, next) {
-    if (req.user.position !== 'Instructor' || req.user.position !== 'Dean' || req.user.position !== 'Chairperson') {
-      return res.status(403).json({ message: 'Forbidden. Insufficient permissions.' });
-    }
-
-    next();
-  }
 }
 
 
