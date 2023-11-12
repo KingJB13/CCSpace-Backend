@@ -42,7 +42,7 @@ export default class ccspaceController
         try
         {
             const { sched_id, roomid } = req.body 
-            const profid = req.user.prof_id
+            const profid = req.user.id
             AuthMiddleware.authenticateToken(req, res, () => 
             {
                 AuthMiddleware.authorizeUser(req, res, async () => 
@@ -192,7 +192,7 @@ export default class ccspaceController
                 body('roomid').isNumeric(),
             ]
             const { time_start, time_end, sub_code, class_section,sched_day, roomid } = req.body
-            const profid = req.user.prof_id
+            const profid = req.user.id
             
             await Promise.all(validationRules.map(validation => validation.run(req)))
 
@@ -238,9 +238,8 @@ export default class ccspaceController
                 body('roomid').isNumeric(),
             ]
 
-            const { subjectcode, sessday, sessid, resid } = req.body
-            const profid = req.user.prof_id
-            const { roomid } = req.params
+            const { subjectcode, sessday, sessid, resid, roomid } = req.body
+            const profid = req.user.id
 
             await Promise.all(validationRules.map(validation => validation.run(req)))
 
@@ -283,7 +282,7 @@ export default class ccspaceController
                 body('roomid').isNumeric
             ]
             const { vacant_start, vacant_end, reserve_date, subjectcode, reserve_day, class_section, reserve_purpose, schedid, roomid } = req.body
-            const profid = req.user.prof_id
+            const profid = req.user.id
     
             await Promise.all(validationRules.map(validation => validation.run(req)))
 
@@ -334,8 +333,8 @@ export default class ccspaceController
                 body('schedid').isNumeric,
                 body('roomid').isNumeric
             ]
-            const { approve_id } = req.params
             const { 
+                approve_id,
                 vacant_start, 
                 vacant_end, 
                 subjectcode, 
@@ -344,7 +343,7 @@ export default class ccspaceController
                 reserve_section, 
                 schedid,  
                 roomid } = req.body
-            const profid  = req.user.prof_id
+            const profid  = req.user.id
 
             await Promise.all(validationRules.map(validation => validation.run(req)))
 
@@ -405,7 +404,7 @@ export default class ccspaceController
         try {
             // only admins can update schedule
             const { sched_id, new_time_start, new_time_end, new_sub_code, new_section, new_sched_day, new_prof_id, new_room_id } = req.body
-            const prof_id = req.user.prof_id
+            const prof_id = req.user.id
             
             AuthMiddleware.authenticateUser(req, res, () => 
             {
@@ -456,7 +455,7 @@ export default class ccspaceController
         */
         try 
         {
-            const user_id = req.user.user_id
+            const user_id = req.user.id
             AuthMiddleware.authenticateUser(req, res, async () => 
             {
                     const deleteAccount = await ccspaceDAO.deleteAccount(user_id)
