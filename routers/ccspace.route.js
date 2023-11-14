@@ -15,7 +15,11 @@ router.post('/approve_reservation/:id',authenticateToken, ccspaceController.apiA
 //get route
 router.route('/ccs_schedule').get(ccspaceController.apiGetWholeSchedule)
 router.get('/room_schedule/:id', authenticateToken, ccspaceController.apiGetSchedule)
+router.get('/prof_schedule', authenticateToken,ccspaceController.apiProfSchedule)
 router.get('/:id/ccs_loghistory', authenticateToken, ccspaceController.apiGetLog)
+router.get('/reservation_details/:id',authenticateToken, ccspaceController.apiGetReservationDetails)
+router.get('/reserved_schedule/:id',authenticateToken,ccspaceController.apiGetReservedScheduleDetails)
+router.get('/reserved_schedule',authenticateToken,ccspaceController.apiReservedScheduleDetails)
 
 //put route
 router.put('/update_password/:id', authenticateToken, ccspaceController.apiUpdatePassword)
@@ -24,6 +28,7 @@ router.put('/time_out/:id',authenticateToken,ccspaceController.apiRoomTimeOut)
 
 //delete route
 router.delete('/delete_account/:id', authenticateToken, ccspaceController.apiDeleteAccount)
-router.delete('/delet_schedule/:id', authenticateToken, ccspaceController.apiDeleteSchedule)
+router.delete('/delete_schedule/:id', authenticateToken, ccspaceController.apiDeleteSchedule)
+router.delete('/reject_reservation',authenticateToken, ccspaceController.apiRejectReservation)
 
 export default router

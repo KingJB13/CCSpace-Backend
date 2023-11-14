@@ -43,17 +43,35 @@ export default class ccspaceDAO{
             return {error: e}
         }
     }
-    static async returnSchedule(sched_id, profid, roomid)
+    static async returnSchedule(sched_id, roomid)
     {
         try
         {
-            const result = await pool.query(`call returnschedule($1, $2, $3)`,[sched_id, profid, roomid])
+            const result = await pool.query(`call returnschedule($1, $2)`,[sched_id, roomid])
             return result.rows
         }
         catch (e)
         {
             console.error(`Unable to get Schedule: ${e}`)
             return {error: e}     
+        }
+    }
+
+    static async profSchedule(sched_id, room_id, prof_id)
+    {
+        try
+        {
+            const result = await pool.query(`SELECT * FROM ccspace_schedule 
+            INNER JOIN ccspace_room ON ccspace_schedule.ccsroom_id = ccspace_room.room_id
+            INNER JOIN ccspace_user ON ccspace_schedule.prof_id = ccspace_user.ccs_id
+            WHERE ccspace_schedule.schedule_id = $1 AND ccspace_room.room_id = $2 AND ccspace_user.ccs_id = $3`,[sched_id, room_id, prof_id])
+
+            return result.rows
+        }
+        catch(e)
+        {
+            console.error(`Unable to get professor's schedule: ${e}`)
+            return {error: e}
         }
     }
 
@@ -70,7 +88,44 @@ export default class ccspaceDAO{
             return { error: e}
         }
     }
+    static async getreservationdetails(profid)
+    {
+        try
+        {
+            const result = await pool.query(`call getreservationdetails($1)`,[profid])
+            return result.rows[0]
+        }
+        catch (e)
+        {
+            console.error(`Unable to get reservation details`)
+        }
+    }
 
+    static async getreservedscheduledetails(profid)
+    {
+        try
+        {
+            const result = await pool.query(`call getreservedscheduledetails($1)`,[profid])
+            return result.rows[0]
+        }
+        catch (e)
+        {
+            console.error(`Unable to get reservation details`)
+        }
+    }
+
+    static async reservedscheduledetails()
+    {
+        try
+        {
+            const result = await pool.query('call reservedscheduledetails')
+            return result.rows[0]
+        }
+        catch (e)
+        {
+            console.error(`Unable to get reservation details`)
+        }
+    }
     //post methods
     static async registeraccount(email, password, first_name, last_name, middle_name, position)
     {
@@ -218,6 +273,17 @@ export default class ccspaceDAO{
         {
             console.error(`Unable to delete Schedule: ${e}`)
             return {error: e}
+        }
+    }
+    static async rejectreservation(rejected_id)
+    {
+        try
+        {
+            return await pool.query(`call rejectreservation($1)`,[rejected_id])
+        }
+        catch (e)
+        {
+            console.error(`Unable to reject reservation: ${e}`)
         }
     }
 }

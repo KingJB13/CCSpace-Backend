@@ -29,8 +29,12 @@ export default class ccspaceController
     {
         try
         {
-            const WholeSchedule = await ccspaceDAO.returnWholeSchedule()
-            res.json(WholeSchedule)
+            AuthMiddleware.authenticateToken(req, res, ()=>{
+                AuthMiddleware.authorizeAdmin(req, res, async ()=>{
+                    const WholeSchedule = await ccspaceDAO.returnWholeSchedule()
+                    res.status(200).json(WholeSchedule)
+                })
+            })
         }
         catch (error)
         {
@@ -41,15 +45,24 @@ export default class ccspaceController
     {
         try
         {
+            const validationRules =[
+                body('sched_id').isNumeric(),
+                body('roomid').isNumeric
+            ]
             const { sched_id, roomid } = req.body 
-            const profid = req.user.id
-            AuthMiddleware.authenticateToken(req, res, () => 
+
+            await Promise.all(validationRules.map(validation => validation.run(req)))
+
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+              return res.status(422).json({ errors: errors.array() })
+            }
+
+            AuthMiddleware.authenticateToken(req, res,async () => 
             {
-                AuthMiddleware.authorizeUser(req, res, async () => 
-                {
-                    const Schedule = await ccspaceDAO.returnSchedule(sched_id, profid, roomid)
-                    res.status(200).json({ status: success })
-                })
+                    const Schedule = await ccspaceDAO.returnSchedule(sched_id, roomid)
+                    res.status(200).json(Schedule)
+                
             })
         }
         catch (error)
@@ -57,6 +70,37 @@ export default class ccspaceController
             res.status(500).json({error: e.message})
         }
     }
+
+    static async apiProfSchedule(req, res)
+    {
+        try
+        {
+            const validationRules = [
+                body('sched_id').isNumeric(),
+                body('roomid').isNumeric
+            ]
+            const {sched_id, roomid} = req.body
+            const prof_id = req.user.id
+    
+            await Promise.all(validationRules.map(validation => validation.run(req)))
+    
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+              return res.status(422).json({ errors: errors.array() })
+            }
+
+            AuthMiddleware.authenticateToken(req, res, async ()=>{
+                const ProfSchedule = await ccspaceDAO.profSchedule(sched_id, roomid, prof_id)
+                return res.status(200).json(ProfSchedule)
+            })
+
+        }
+        catch (error)
+        {
+
+        }
+    }
+
     static async apiGetLog(req, res)
     {
         try
@@ -66,7 +110,7 @@ export default class ccspaceController
                 AuthMiddleware.authorizeAdmin(req, res, async () => 
                 {
                     const log = await ccspaceDAO.getlog()
-                    res.status(200).json({ status: success })
+                    res.status(200).json(log)
                 })
             })
         }
@@ -75,6 +119,59 @@ export default class ccspaceController
             res.status(500).json({ error: e.message})
         }
 
+    }
+
+    static async apiGetReservationDetails(req, res)
+    {
+        try
+        {
+            const profid = req.user.id
+            AuthMiddleware.authenticateToken(req, res, async () => 
+            {
+                    const reservationdetails = await ccspaceDAO.getreservationdetails(profid)
+                    res.status(200).json(reservationdetails)
+            })
+        }
+        catch (error)
+        {
+            res.status(500).json({ error: e.message })
+        }
+    }
+    static async apiGetReservedScheduleDetails(req, res)
+    {
+        //for professors
+        try
+        {
+            const profid = req.user.id
+            AuthMiddleware.authenticateToken(req, res, async () => 
+            {
+                    const reservedscheduledetails = await ccspaceDAO.getreservedscheduledetails(profid)
+                    res.status(200).json(reservedscheduledetails)
+            })
+        }
+        catch (error)
+        {
+            res.status(500).json({ error: e.message })
+        }
+    }
+    static async apiReservedScheduleDetails(req, res)
+    {
+        //for admin
+        try
+        {
+            AuthMiddleware.authenticateToken(req, res, () => 
+            {
+                AuthMiddleware.authorizeAdmin(req, res, async () => 
+                {
+                    const reservedscheduledetails = await ccspaceDAO.reservedscheduledetails()
+                    res.status(200).json(reservedscheduledetails)
+                })
+            })
+        }
+        catch (error)
+        {
+            res.status(500).json({ error: e.message})
+        }
     }
 
     //POST OPERATIONS
@@ -124,7 +221,7 @@ export default class ccspaceController
                 middle_name, 
                 position,
             )
-            res.json(registerAccount)
+            res.status(200).json(registerAccount)
         }
         catch (e)
         {
@@ -160,14 +257,14 @@ export default class ccspaceController
             }
         
             const jwtToken = jwtGenerator(loginAccount.ccs_id)
-            res.json(jwtToken)
+            res.status(200).json(jwtToken)
     }
 
     static async apiAuthorize(req, res){
         try{
             const ccs_id = req.user.id
             const Authorize = await ccspaceDAO.authorize(ccs_id)
-            res.json(Authorize)
+            res.status(200).json(Authorize)
         }
         catch(error)
         {
@@ -215,7 +312,7 @@ export default class ccspaceController
                         roomid
                     )
           
-                    res.status(200).json({ status: 'success' })
+                    res.status(200).json(createSchedule)
                 })
             })
         } 
@@ -257,7 +354,7 @@ export default class ccspaceController
                         profid, 
                         roomid
                     )
-                    res.status(200).json({ status: success})
+                    res.status(200).json(RoomTimeIn)
             })
         }
         catch (error)
@@ -307,7 +404,7 @@ export default class ccspaceController
                         roomid
                     )
 
-                    res.status(200).json({ status: success})
+                    res.status(200).json(CreateReservation)
                 })
             })
         }
@@ -354,7 +451,7 @@ export default class ccspaceController
             
             AuthMiddleware.authenticateToken(req, res,async () =>
             {
-                    const CreateReservation = await ccspaceDAO.approvedreservation( 
+                    const ApprovedReservation = await ccspaceDAO.approvedreservation( 
                         approve_id,
                         vacant_start, 
                         vacant_end, 
@@ -366,7 +463,7 @@ export default class ccspaceController
                         profid, 
                         roomid
                     )
-                    res.status(200).json({ status: success})
+                    res.status(200).json(ApprovedReservation)
 
             })
         }
@@ -383,7 +480,12 @@ export default class ccspaceController
         try
         {
             // the new password passed to the backend is confirmed and matched the user's old password
-            const { user_id } = req.user
+
+            const validationRules = [
+                body('newPassword').isString().isLength({min: 8, max: 32}).custom(value => sqlInjectionCheck(value))
+            ]
+
+            const user_id  = req.user.id
             const { newPassword } = req.body.password
             const hashedPassword = await bcrypt.hash(newPassword, 10)
 
@@ -391,7 +493,7 @@ export default class ccspaceController
             AuthMiddleware.authenticateToken(req, res, () => 
             {
                     const updatePassword = ccspaceDAO.updatePassword(user_id, hashedPassword)
-                    res.status(200).json({ message: 'Schedule created successfully' })
+                    res.status(200).json(updatePassword)
             })
         }
         catch (e)
@@ -402,11 +504,27 @@ export default class ccspaceController
     static async apiUpdateSchedule(req, res)
     {
         try {
+            const validationRules =[
+                body('sched_id').isNumeric(),
+                body('new_time_start').matches('^([0-9]|0[0-9]|1[0-9]|2[0-3])$'),
+                body('new_time_end').matches('^([0-9]|0[0-9]|1[0-9]|2[0-3])$'),
+                body('new_sub_code').isString().isLength({max:10}).custom(value => sqlInjectionCheck(value)),
+                body('new_section').isString().isLength({min:7, max:10}).custom(value => sqlInjectionCheck(value)),
+                body('new_sched_day').isDate().isISO8601('yyyy-mm-dd'),
+                body('new_prof_id').isNumeric(),
+                body('new_room_id').isNumeric()
+            ]
             // only admins can update schedule
             const { sched_id, new_time_start, new_time_end, new_sub_code, new_section, new_sched_day, new_prof_id, new_room_id } = req.body
-            const prof_id = req.user.id
             
-            AuthMiddleware.authenticateUser(req, res, () => 
+            await Promise.all(validationRules.map(validation => validation.run(req)))
+
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+              return res.status(422).json({ errors: errors.array() })
+            }
+            
+            AuthMiddleware.authenticateToken(req, res, () => 
             {
                 AuthMiddleware.authorizeAdmin(req, res, async () => 
                 {
@@ -421,7 +539,7 @@ export default class ccspaceController
                         new_room_id
                     );
           
-                    res.status(200).json({ message: 'Schedule created successfully' })
+                    res.status(200).json(updateSchedule)
                 })
             })
             } catch (error) {
@@ -434,12 +552,24 @@ export default class ccspaceController
     {
         try
         {
+            const validationRules =[
+                body('logid').isNumeric,
+                body('sessdate').isISO8601('yyyy-mm-dd')
+            ]
             const { logid, sessdate } = req.body
-            const prof_id  = req.user.prof_id
+            const prof_id  = req.user.id
+
+            await Promise.all(validationRules.map(validation => validation.run(req)))
+
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+              return res.status(422).json({ errors: errors.array() })
+            }
+
             AuthMiddleware.authenticateToken(req, res, () => 
             {
                     const RoomTimeOut = ccspaceDAO.roomtimeout(logid, sessdate, prof_id)
-                    res.status(200).json({ message: 'Schedule created successfully' })
+                    res.status(200).json(RoomTimeOut)
             })
         }
         catch (error)
@@ -456,10 +586,10 @@ export default class ccspaceController
         try 
         {
             const user_id = req.user.id
-            AuthMiddleware.authenticateUser(req, res, async () => 
+            AuthMiddleware.authenticateToken(req, res, async () => 
             {
                     const deleteAccount = await ccspaceDAO.deleteAccount(user_id)
-                    res.status(200).json({ error: e.message })
+                    res.status(200).json(deleteAccount)
             })
             } catch (error) {
 
@@ -474,15 +604,53 @@ export default class ccspaceController
             /* 
             * only admins can delete schedule
             */
+            const validationRules =[body('rejected_id').isNumeric]
             const sched_id = req.body.sched_id
-            AuthMiddleware.authenticateUser(req, res, async () => 
+
+            await Promise.all(validationRules.map(validation => validation.run(req)))
+
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+              return res.status(422).json({ errors: errors.array() })
+            }
+
+            AuthMiddleware.authenticateToken(req, res, () => 
             {
+                AuthMiddleware.authorizeAdmin(req, res, async () =>{
                     const deleteSchedule = await ccspaceDAO.deleteSchedule(sched_id)
-                    res.status(200).json({ error: e.message })
+                    res.status(200).json(deleteSchedule)
+                })
             })
             } catch (error) {
 
               res.status(500).json({ error: e.message })
             }
+    }
+
+    static async apiRejectReservation(req, res)
+    {
+        try
+        {
+            const validationRules =[body('rejected_id').isNumeric]
+
+            const rejected_id = req.body.rejected_id
+
+            await Promise.all(validationRules.map(validation => validation.run(req)))
+
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+              return res.status(422).json({ errors: errors.array() })
+            }
+
+            AuthMiddleware.authenticateToken(req, res, async () => 
+            {
+                    const log = await ccspaceDELETE.rejectreservation(rejected_id)
+                    res.status(200).json({ status: success })
+            })
         }
+        catch (error)
+        {
+            res.status(500).json({ error: e.message})
+        }
+    }
 }
